@@ -22,6 +22,7 @@ import urllib.request
 import shutil
 import warnings
 from distutils.version import LooseVersion
+from skimage.util import img_as_float
 
 # URL from which to download the latest COCO trained weights
 COCO_MODEL_URL = "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
@@ -893,16 +894,18 @@ def resize(image, output_shape, order=1, mode='constant', cval=0, clip=True,
     of skimage. This solves the problem by using different parameters per
     version. And it provides a central place to control resizing defaults.
     """
+    return_type = image.dtype
+    imgf = img_as_float(image)
     if LooseVersion(skimage.__version__) >= LooseVersion("0.14"):
         # New in 0.14: anti_aliasing. Default it to False for backward
         # compatibility with skimage 0.13.
         return skimage.transform.resize(
-            image, output_shape,
+            imgf, output_shape,
             order=order, mode=mode, cval=cval, clip=clip,
             preserve_range=preserve_range, anti_aliasing=anti_aliasing,
-            anti_aliasing_sigma=anti_aliasing_sigma)
+            anti_aliasing_sigma=anti_aliasing_sigma).astype(return_type)
     else:
         return skimage.transform.resize(
-            image, output_shape,
+            imgf, output_shape,
             order=order, mode=mode, cval=cval, clip=clip,
-            preserve_range=preserve_range)
+            preserve_range=preserve_range).astype(return_type)
