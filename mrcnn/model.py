@@ -344,6 +344,10 @@ class ProposalLayer(Layer):
 
     def compute_output_shape(self, input_shape):
         return (None, self.proposal_count, 4)
+    
+    def get_config(self):
+        config = super().get_config()
+        return config
 
 
 ############################################################
@@ -462,6 +466,11 @@ class PyramidROIAlign(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1], )
+
+    def get_config(self):
+        config = super().get_config()
+        return config
+
 
 
 ############################################################
@@ -689,6 +698,11 @@ class DetectionTargetLayer(Layer):
 
     def compute_mask(self, inputs, mask=None):
         return [None, None, None, None]
+    
+    def get_config(self):
+        config = super().get_config()
+        return config
+
 
 
 ############################################################
@@ -835,6 +849,11 @@ class DetectionLayer(Layer):
 
     def compute_output_shape(self, input_shape):
         return (None, self.config.DETECTION_MAX_INSTANCES, 6)
+    
+    def get_config(self):
+        config = super().get_config()
+        return config
+
 
 
 ############################################################
