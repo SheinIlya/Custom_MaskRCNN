@@ -2187,14 +2187,22 @@ class MaskRCNN():
         loss_names = [
             "rpn_class_loss",  "rpn_bbox_loss",
             "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
-        existing_layer_names = []
+        # existing_layer_names = []
+        # for name in loss_names:
+        #     layer = self.keras_model.get_layer(name)
+        #     if layer is None or name in existing_layer_names:
+        #         continue
+        #     existing_layer_names.append(name)
+        #     loss = (tf.reduce_mean(layer.output, keepdims=True)
+        #             * self.config.LOSS_WEIGHTS.get(name, 1.))
+        #     self.keras_model.add_loss(loss)
         for name in loss_names:
             layer = self.keras_model.get_layer(name)
-            if layer is None or name in existing_layer_names:
+            if layer.output in self.keras_model.losses:
                 continue
-            existing_layer_names.append(name)
-            loss = (tf.reduce_mean(layer.output, keepdims=True)
-                    * self.config.LOSS_WEIGHTS.get(name, 1.))
+            loss = (
+                tf.reduce_mean(input_tensor=layer.output, keepdims=True)
+                * self.config.LOSS_WEIGHTS.get(name, 1.))
             self.keras_model.add_loss(loss)
 
         # Add L2 Regularization
@@ -2210,16 +2218,16 @@ class MaskRCNN():
             optimizer=optimizer,
             loss=[None] * len(self.keras_model.outputs))
 
-        # Add metrics for losses
+                # Add metrics for losses
         for name in loss_names:
             if name in self.keras_model.metrics_names:
                 continue
             layer = self.keras_model.get_layer(name)
             self.keras_model.metrics_names.append(name)
             loss = (
-                tf.reduce_mean(layer.output, keepdims=True)
+                tf.reduce_mean(input_tensor=layer.output, keepdims=True)
                 * self.config.LOSS_WEIGHTS.get(name, 1.))
-            self.keras_model.add_metric(loss, name)
+            self.keras_model.add_metric(loss, name=name, aggregation='mean')
 
     def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
         """Sets model layers as trainable if their names match
